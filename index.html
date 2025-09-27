@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education & Success: A Polished Presentation</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js for the pie chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --accent-color: #a78bfa; /* violet-400 */
+            --accent-color-deep: #7c3aed; /* violet-600 */
+            --glow-color: rgba(124, 58, 237, 0.5);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc; /* text-slate-50 */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .gradient-bg {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            overflow: hidden;
+            z-index: 0;
+            top: 0;
+            left: 0;
+        }
+
+        .gradient-bg svg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            animation: rotate 30s cubic-bezier(0.8, 0.2, 0.2, 0.8) alternate infinite;
+            z-index: 1;
+            opacity: 0.8; /* Added for softer background */
+        }
+
+        .g1 { fill: #1e1b4b; } /* Darker indigo-950 */
+        .g2 { fill: var(--accent-color-deep); }
+        .g3 { fill: #831843; } /* Darker pink-900 */
+
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 16:9 Presentation Frame */
+        .presentation-frame {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 177.78vh; /* 16:9 aspect ratio */
+            max-height: 56.25vw; /* 16:9 aspect ratio */
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 5rem;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.98);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out, visibility 0.8s;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 80px rgba(0,0,0,0.3), 0 0 50px var(--glow-color);
+        }
+        
+        /* Animation Styles */
+        .anim-reveal > span, .anim-fade-up, .anim-list-item {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .anim-fade-up { transform: translateY(20px); }
+        .anim-list-item { transform: translateX(-20px); }
+        .anim-reveal > span { display: inline-block; transform: translateY(20px); }
+        
+        .active .anim-fade-up, .active .anim-list-item, .active .anim-reveal > span {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        /* Staggered animation delays */
+        .active .anim-item-2 { transition-delay: 0.2s; }
+        .active .anim-item-3 { transition-delay: 0.4s; }
+        .active .anim-item-4 { transition-delay: 0.6s; }
+        .active .anim-item-5 { transition-delay: 0.8s; }
+        .active .anim-reveal > span { transition: all 0.5s ease-out; }
+
+        /* Custom Accent Styling */
+        .text-gradient {
+            background: linear-gradient(90deg, var(--accent-color), #f8fafc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Navigation & Progress Bar */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .nav-arrow:hover {
+            background-color: rgba(124, 58, 237, 0.5);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 20px var(--glow-color);
+        }
+        #prev-slide { left: 2rem; }
+        #next-slide { right: 2rem; }
+        
+        #progress-bar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-color-deep));
+            transition: width 0.5s ease-out;
+            border-radius: 0 3px 3px 0;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="gradient-bg">
+        <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <path class="g1" d="M386 702c-120-13-162-225-103-345s203-163 322-150c120 13 162 225 103 345s-203 163-322 150z"/>
+                <path class="g2" d="M500 500m-250 0a250 250 0 1 0 500 0a250 250 0 1 0 -500 0" />
+                <path class="g3" d="M169 287c-120 13-225 162-150 322s163 203 345 103 162-225 150-322-163-203-345-103z"/>
+            </g>
+        </svg>
+    </div>
+
+    <div class="presentation-frame">
+        <!-- Slide 1: Title -->
+        <section class="slide active">
+            <div class="glass-card max-w-4xl">
+                <h1 class="text-5xl md:text-7xl font-extrabold text-gradient anim-fade-up">Education & Success</h1>
+                <h2 class="text-2xl md:text-3xl font-light mt-4 text-slate-300 anim-fade-up anim-item-2">Do They Go Hand in Hand?</h2>
+                <div class="w-24 h-1 bg-violet-500 my-10 mx-auto rounded-full anim-fade-up anim-item-3"></div>
+                <div class="mt-4 text-lg text-slate-400">
+                    <p class="font-semibold text-slate-200 anim-fade-up anim-item-4">Presented by:</p>
+                    <p class="anim-fade-up anim-item-5">Aditya Pandey • Akriti Srivastava • Manya Rastogi • Aksharr Soni • Manan Bhatia</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Introduction -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Introduction</span></h2>
+                <blockquote class="text-2xl italic text-slate-300 border-l-4 border-violet-500 pl-6 anim-fade-up anim-item-2">
+                    "Education is not the learning of facts, but the training of the mind to think."
+                </blockquote>
+                <p class="mt-4 text-right text-xl text-slate-400 anim-fade-up anim-item-3">- Albert Einstein</p>
+            </div>
+        </section>
+
+        <!-- Slide 3: The Great Debate -->
+        <section class="slide">
+             <div class="glass-card max-w-3xl">
+                 <h2 class="text-3xl md:text-5xl font-bold mb-6 anim-reveal">The <span class="text-gradient">Great Debate</span></h2>
+                 <p class="text-2xl text-slate-300 anim-fade-up anim-item-2">Does a formal degree guarantee a successful life?</p>
+            </div>
+        </section>
+        
+        <!-- Slide 4: The 'YES' Argument -->
+        <section class="slide">
+            <div class="glass-card max-w-5xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-fade-up flex items-center justify-center gap-x-4">
+                    <span class="text-slate-300">Argument:</span>
+                    <span class="text-green-400">YES, It's Crucial</span>
+                </h2>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="anim-list-item anim-item-2">
+                        <h3 class="text-2xl font-semibold mb-2">Strong Foundation</h3>
+                        <p class="text-slate-400">Education builds a framework of knowledge and teaches you how to learn effectively for the rest of your life.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-3">
+                        <h3 class="text-2xl font-semibold mb-2">Discipline & Ethics</h3>
+                        <p class="text-slate-400">It instills a structured approach to problem-solving and the professional integrity required in high-stakes careers.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-4">
+                        <h3 class="text-2xl font-semibold mb-2">Opens Doors</h3>
+                        <p class="text-slate-400">A degree is often the first filter for employers, providing credibility and access to exclusive professional networks.</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-lg text-slate-300 anim-fade-up anim-item-5">Think: Doctors, Scientists, and leaders like Sundar Pichai.</p>
+            </div>
+        </section>
+
+        <!-- Slide 5: The 'NO' Argument -->
+        <section class="slide">
+            <div class="glass-card max-w-5xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-fade-up flex items-center justify-center gap-x-4">
+                    <span class="text-slate-300">Argument:</span>
+                    <span class="text-red-400">NO, It's Not Essential</span>
+                </h2>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="anim-list-item anim-item-2">
+                        <h3 class="text-2xl font-semibold mb-2">Skills Over Degrees</h3>
+                        <p class="text-slate-400">Today’s world values tangible skills and proven abilities, which can be acquired outside of traditional classrooms.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-3">
+                        <h3 class="text-2xl font-semibold mb-2">Innovation & Vision</h3>
+                        <p class="text-slate-400">True disruption often comes from a unique perspective, unconstrained by rigid academic structures.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-4">
+                        <h3 class="text-2xl font-semibold mb-2">Risk-Taking</h3>
+                        <p class="text-slate-400">Success in business and arts requires bold risks—a trait that formal education sometimes discourages in favor of safety.</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-lg text-slate-300 anim-fade-up anim-item-5">Think: Entrepreneurs, Artists, and visionaries like Ritesh Agarwal.</p>
+            </div>
+        </section>
+        
+        <!-- Slide 6: The Balance -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Finding The Balance</span></h2>
+                <blockquote class="text-2xl italic text-slate-300 border-l-4 border-violet-500 pl-6 anim-fade-up anim-item-2">
+                    "Education provides the match, but you must be the one to light the fire."
+                </blockquote>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Survey -->
+        <section class="slide">
+             <div id="survey-container" class="glass-card max-w-3xl w-full">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6 anim-reveal">Quick Poll: What's More Vital Today?</h2>
+                <div id="survey-options" class="flex flex-col md:flex-row gap-6 justify-center mt-8">
+                    <button class="survey-btn text-lg bg-violet-600 hover:bg-violet-500 text-white font-bold py-4 px-8 rounded-lg transform hover:scale-105 transition-all anim-fade-up anim-item-2" data-vote="degree">
+                        A Formal Degree
+                    </button>
+                    <button class="survey-btn text-lg bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-8 rounded-lg transform hover:scale-105 transition-all anim-fade-up anim-item-3" data-vote="skills">
+                        Practical Skills & Experience
+                    </button>
+                </div>
+            </div>
+            <div id="results-container" class="glass-card max-w-2xl w-full hidden">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Live Poll Results</h2>
+                <p class="text-lg text-slate-400 mb-8">Based on common industry surveys.</p>
+                <canvas id="successChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Slide 8: Conclusion -->
+        <section class="slide">
+             <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Conclusion</span></h2>
+                <p class="text-2xl text-slate-300 leading-relaxed anim-fade-up anim-item-2">
+                    Education is not the destination; it's the launchpad. It provides the tools, but success is built by the hands that use them. True achievement is the synergy of <span class="font-bold text-violet-400">knowledge</span> from learning, the <span class="font-bold text-violet-400">vision</span> to see new possibilities, and the <span class="font-bold text-violet-400">persistence</span> to overcome any obstacle.
+                </p>
+            </div>
+        </section>
+
+        <!-- Slide 9: Q&A -->
+        <section class="slide">
+            <div class="glass-card max-w-2xl">
+                 <h2 class="text-6xl md:text-8xl font-extrabold text-gradient anim-fade-up">Q&A</h2>
+                 <p class="text-2xl mt-4 text-slate-300 anim-fade-up anim-item-2">Questions?</p>
+            </div>
+        </section>
+        
+        <!-- Slide 10: Thank You -->
+        <section class="slide">
+             <div class="glass-card max-w-2xl">
+                <h2 class="text-5xl md:text-7xl font-bold anim-reveal"><span class="text-gradient">Thank You</span></h2>
+            </div>
+        </section>
+    </div>
+
+    <!-- Navigation & Progress Bar -->
+    <button id="prev-slide" class="nav-arrow" aria-label="Previous Slide">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+    </button>
+    <button id="next-slide" class="nav-arrow" aria-label="Next Slide">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+    </button>
+    <div id="progress-bar-container"><div id="progress-bar"></div></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevButton = document.getElementById('prev-slide');
+            const nextButton = document.getElementById('next-slide');
+            const progressBar = document.getElementById('progress-bar');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function splitTextIntoSpans(selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    const text = el.innerText;
+                    el.innerHTML = '';
+                    text.split('').forEach((char, i) => {
+                        const span = document.createElement('span');
+                        span.textContent = char;
+                        if(char === ' ') span.style.width = '1rem';
+                        span.style.transitionDelay = `${i * 0.03}s`;
+                        el.appendChild(span);
+                    });
+                });
+            }
+
+            splitTextIntoSpans('.anim-reveal');
+
+            function updatePresentation() {
+                slides.forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+                progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+            }
+
+            nextButton.addEventListener('click', () => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updatePresentation();
+            });
+
+            prevButton.addEventListener('click', () => {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updatePresentation();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextButton.click();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevButton.click();
+                }
+            });
+
+            const surveyButtons = document.querySelectorAll('.survey-btn');
+            const surveyContainer = document.getElementById('survey-container');
+            const resultsContainer = document.getElementById('results-container');
+            let chart;
+
+            surveyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    surveyContainer.style.display = 'none';
+                    resultsContainer.classList.remove('hidden');
+
+                    const ctx = document.getElementById('successChart').getContext('2d');
+                    if (chart) chart.destroy();
+
+                    chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['A Formal Degree', 'Practical Skills & Experience'],
+                            datasets: [{
+                                data: [35, 65],
+                                backgroundColor: ['rgba(124, 58, 237, 0.7)', 'rgba(167, 139, 250, 0.7)'],
+                                borderColor: ['#0f172a', '#0f172a'],
+                                borderWidth: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#f8fafc', font: { size: 14 } }
+                                },
+                                tooltip: {
+                                    callbacks: { label: (c) => `${c.label}: ${c.parsed}%` }
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+            updatePresentation();
+        });
+    </script>
+</body>
+</html>
