@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Education & Success: A Polished Presentation</title>
+    <title>Education & Success: A 3D Presentation</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,6 +15,11 @@
 
     <!-- Chart.js for the pie chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 3D & Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
 
     <style>
         :root {
@@ -34,32 +39,15 @@
             min-height: 100vh;
         }
 
-        .gradient-bg {
-            width: 100vw;
-            height: 100vh;
+        /* NEW 3D Background Container */
+        #three-bg {
             position: fixed;
-            overflow: hidden;
-            z-index: 0;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
-
-        .gradient-bg svg {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            animation: rotate 30s cubic-bezier(0.8, 0.2, 0.2, 0.8) alternate infinite;
-            z-index: 1;
-            opacity: 0.8; /* Added for softer background */
-        }
-
-        .g1 { fill: #1e1b4b; } /* Darker indigo-950 */
-        .g2 { fill: var(--accent-color-deep); }
-        .g3 { fill: #831843; } /* Darker pink-900 */
-
-        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 16:9 Presentation Frame */
         .presentation-frame {
@@ -179,21 +167,51 @@
             transition: width 0.5s ease-out;
             border-radius: 0 3px 3px 0;
         }
+        
+        /* NEW Login Overlay Styles */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease-out;
+        }
     </style>
 </head>
 <body>
     
-    <div class="gradient-bg">
-        <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
-            <g>
-                <path class="g1" d="M386 702c-120-13-162-225-103-345s203-163 322-150c120 13 162 225 103 345s-203 163-322 150z"/>
-                <path class="g2" d="M500 500m-250 0a250 250 0 1 0 500 0a250 250 0 1 0 -500 0" />
-                <path class="g3" d="M169 287c-120 13-225 162-150 322s163 203 345 103 162-225 150-322-163-203-345-103z"/>
-            </g>
-        </svg>
+    <div id="three-bg"></div>
+
+    <!-- NEW Login Portal -->
+    <div id="login-overlay">
+        <div class="glass-card w-full max-w-sm">
+            <form id="login-form">
+                <h2 class="text-3xl font-bold text-center text-gradient mb-6">Access Presentation</h2>
+                <div class="mb-4">
+                    <label for="username" class="block text-slate-300 text-sm font-bold mb-2 text-left">Username</label>
+                    <input type="text" id="username" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-violet-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-slate-300 text-sm font-bold mb-2 text-left">Password</label>
+                    <input type="password" id="password" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-violet-500" required>
+                </div>
+                <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-lg transform hover:scale-105 transition-all">
+                    Login
+                </button>
+                <p id="error-message" class="text-red-400 text-center mt-4 h-4"></p>
+            </form>
+        </div>
     </div>
 
-    <div class="presentation-frame">
+
+    <div class="presentation-frame" style="visibility: hidden;"> <!-- Initially hidden -->
         <!-- Slide 1: Title -->
         <section class="slide active">
             <div class="glass-card max-w-4xl">
@@ -278,28 +296,30 @@
             </div>
         </section>
         
-        <!-- NEW Slide 6: Case Study Face-Off -->
+        <!-- Slide 6: Case Study Face-Off with Images -->
         <section class="slide">
             <div class="glass-card max-w-6xl w-full">
                 <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Case Study: Two Paths</span></h2>
                 <div class="flex flex-col md:flex-row gap-8 justify-center">
                     <!-- Path 1 -->
-                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-2">
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-2 text-center">
+                        <img src="https://github.com/Tech4Aditya/Education-Success/blob/main/StoryofSundarPichai.jpg?raw=true" alt="Sundar Pichai" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-2 border-green-400">
                         <h3 class="text-2xl font-bold text-green-400">The Institutional Path</h3>
                         <p class="text-lg font-semibold mt-2">Sundar Pichai</p>
-                        <p class="text-slate-400 mt-4">Leveraged elite education (IIT, Stanford, Wharton) to build deep technical and business expertise, rising through the ranks to lead one of the world's most powerful companies, Google.</p>
+                        <p class="text-slate-400 mt-4 text-left">Leveraged elite education (IIT, Stanford, Wharton) to build deep technical and business expertise, rising through the ranks to lead one of the world's most powerful companies, Google.</p>
                     </div>
                     <!-- Path 2 -->
-                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-4">
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-4 text-center">
+                        <img src="https://github.com/Tech4Aditya/Education-Success/blob/main/OYO-Ritesh-Agarwal.jpg?raw=true" alt="Ritesh Agarwal" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-2 border-red-400">
                         <h3 class="text-2xl font-bold text-red-400">The Entrepreneurial Path</h3>
                         <p class="text-lg font-semibold mt-2">Ritesh Agarwal</p>
-                        <p class="text-slate-400 mt-4">Dropped out of college to solve a real-world problem he experienced firsthand. Built OYO Rooms through grit, observation, and relentless execution, learning directly from the market.</p>
+                        <p class="text-slate-400 mt-4 text-left">Dropped out of college to solve a real-world problem he experienced firsthand. Built OYO Rooms through grit, observation, and relentless execution, learning directly from the market.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- NEW Slide 7: The Modern Skills Gap -->
+        <!-- Slide 7: The Modern Skills Gap -->
         <section class="slide">
             <div class="glass-card max-w-4xl w-full">
                 <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">The Modern Skills Gap</span></h2>
@@ -396,8 +416,64 @@
             const prevButton = document.getElementById('prev-slide');
             const nextButton = document.getElementById('next-slide');
             const progressBar = document.getElementById('progress-bar');
+            const presentationFrame = document.querySelector('.presentation-frame');
+            const loginOverlay = document.getElementById('login-overlay');
+            const loginForm = document.getElementById('login-form');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+
             let currentSlide = 0;
             const totalSlides = slides.length;
+
+            // --- NEW Login Logic ---
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Check if the password is correct
+                if (passwordInput.value === 'AP') {
+                    // Hide login and show presentation
+                    loginOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        loginOverlay.style.display = 'none';
+                    }, 500);
+                    
+                    presentationFrame.style.visibility = 'visible';
+
+                    // Initialize the 3D background and presentation now
+                    initThree();
+                    updatePresentation();
+
+                    // FIX: Attach navigation event listeners AFTER successful login
+                    nextButton.addEventListener('click', () => {
+                        currentSlide = (currentSlide + 1) % totalSlides;
+                        updatePresentation();
+                    });
+
+                    prevButton.addEventListener('click', () => {
+                        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                        updatePresentation();
+                    });
+                    
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'ArrowRight' || e.key === ' ') {
+                            e.preventDefault();
+                            nextButton.click();
+                        } else if (e.key === 'ArrowLeft') {
+                            e.preventDefault();
+                            prevButton.click();
+                        }
+                    });
+
+                } else {
+                    // Show error message
+                    errorMessage.textContent = 'Incorrect password.';
+                    // Clear the field after a delay
+                    setTimeout(() => {
+                        errorMessage.textContent = '';
+                        passwordInput.value = '';
+                    }, 2000);
+                }
+            });
+
 
             function splitTextIntoSpans(selector) {
                 const elements = document.querySelectorAll(selector);
@@ -425,27 +501,9 @@
                     }
                 });
                 progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+                // NEW: Trigger background transition
+                transitionBackground(currentSlide);
             }
-
-            nextButton.addEventListener('click', () => {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                updatePresentation();
-            });
-
-            prevButton.addEventListener('click', () => {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                updatePresentation();
-            });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight' || e.key === ' ') {
-                    e.preventDefault();
-                    nextButton.click();
-                } else if (e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    prevButton.click();
-                }
-            });
 
             const surveyButtons = document.querySelectorAll('.survey-btn');
             const surveyContainer = document.getElementById('survey-container');
@@ -487,7 +545,112 @@
                     });
                 });
             });
-            updatePresentation();
+            
+            // --- NEW: Three.js Background Logic ---
+            let scene, camera, renderer, nebulaParticles, crystalGroup, synergyParticles, stars;
+            const container = document.getElementById('three-bg');
+
+            function initThree() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                renderer = new THREE.WebGLRenderer({ alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(renderer.domElement);
+                camera.position.z = 5;
+
+                // Create all background elements
+                createNebula();
+                createCrystals();
+                createSynergy();
+                createStars();
+                
+                window.addEventListener('resize', onWindowResize, false);
+                animate();
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function createNebula() {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const textureLoader = new THREE.TextureLoader();
+                const sprite = textureLoader.load('https://threejs.org/examples/textures/sprites/disc.png');
+
+                for (let i = 0; i < 5000; i++) {
+                    vertices.push(
+                        (Math.random() - 0.5) * 15,
+                        (Math.random() - 0.5) * 15,
+                        (Math.random() - 0.5) * 15
+                    );
+                }
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                const material = new THREE.PointsMaterial({
+                    size: 0.1,
+                    map: sprite,
+                    blending: THREE.AdditiveBlending,
+                    depthTest: false,
+                    transparent: true,
+                    color: 0x6a0dad, // Purple
+                });
+                nebulaParticles = new THREE.Points(geometry, material);
+                scene.add(nebulaParticles);
+            }
+
+            function createCrystals() {
+                crystalGroup = new THREE.Group();
+                const geometry = new THREE.ConeGeometry(0.2, 0.5, 6);
+                const greenMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x00ff00, transparent: true, opacity: 0.6 });
+                const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0xff0000, transparent: true, opacity: 0.6 });
+
+                for(let i=0; i<100; i++) {
+                    const material = i < 50 ? greenMaterial : redMaterial;
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(
+                        (Math.random() - 0.5) * 20,
+                        (Math.random() - 0.5) * 20,
+                        (Math.random() - 0.5) * 20
+                    );
+                    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                    crystalGroup.add(mesh);
+                }
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                crystalGroup.add(ambientLight);
+                crystalGroup.visible = false;
+                scene.add(crystalGroup);
+            }
+            
+            function createSynergy() { /* simplified */ }
+            function createStars() { /* simplified */ }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (nebulaParticles) nebulaParticles.rotation.y += 0.0005;
+                if (crystalGroup) crystalGroup.rotation.y -= 0.0005;
+                if (renderer) renderer.render(scene, camera);
+            }
+
+            function transitionBackground(slideIndex) {
+                 gsap.to(camera.position, { duration: 1.5, ease: 'power2.inOut', z: 5 });
+                 
+                 // Show nebula for first slides
+                 nebulaParticles.visible = slideIndex < 3 || slideIndex > 6;
+                 crystalGroup.visible = slideIndex >= 3 && slideIndex <= 6;
+
+                if (slideIndex === 3) { // YES Argument
+                    gsap.to(camera.position, { duration: 1.5, x: -3, z: 4, ease: 'power2.inOut' });
+                } else if (slideIndex === 4) { // NO Argument
+                    gsap.to(camera.position, { duration: 1.5, x: 3, z: 4, ease: 'power2.inOut' });
+                } else if (slideIndex >= 3 && slideIndex <=6) { // Case study / Neutral
+                     gsap.to(camera.position, { duration: 1.5, x: 0, z: 8, ease: 'power2.inOut' });
+                } else {
+                     gsap.to(camera.position, { duration: 1.5, x: 0, z: 5, ease: 'power2.inOut' });
+                }
+            }
+
         });
     </script>
 </body>
