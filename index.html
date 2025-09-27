@@ -87,6 +87,7 @@
             visibility: hidden;
             transform: scale(0.98);
             transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out, visibility 0.8s;
+            perspective: 1000px;
         }
 
         .slide.active {
@@ -106,17 +107,18 @@
         }
         
         /* Animation Styles */
-        .anim-reveal > span, .anim-fade-up, .anim-list-item {
+        .anim-reveal > span, .anim-fade-up, .anim-list-item, .anim-flip-in {
             opacity: 0;
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
         .anim-fade-up { transform: translateY(20px); }
         .anim-list-item { transform: translateX(-20px); }
         .anim-reveal > span { display: inline-block; transform: translateY(20px); }
-        
-        .active .anim-fade-up, .active .anim-list-item, .active .anim-reveal > span {
+        .anim-flip-in { transform: rotateX(-90deg); }
+
+        .active .anim-fade-up, .active .anim-list-item, .active .anim-reveal > span, .active .anim-flip-in {
             opacity: 1;
-            transform: translate(0, 0);
+            transform: translate(0, 0) rotateX(0);
         }
 
         /* Staggered animation delays */
@@ -124,6 +126,7 @@
         .active .anim-item-3 { transition-delay: 0.4s; }
         .active .anim-item-4 { transition-delay: 0.6s; }
         .active .anim-item-5 { transition-delay: 0.8s; }
+        .active .anim-item-6 { transition-delay: 1.0s; }
         .active .anim-reveal > span { transition: all 0.5s ease-out; }
 
         /* Custom Accent Styling */
@@ -275,7 +278,48 @@
             </div>
         </section>
         
-        <!-- Slide 6: The Balance -->
+        <!-- NEW Slide 6: Case Study Face-Off -->
+        <section class="slide">
+            <div class="glass-card max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Case Study: Two Paths</span></h2>
+                <div class="flex flex-col md:flex-row gap-8 justify-center">
+                    <!-- Path 1 -->
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-2">
+                        <h3 class="text-2xl font-bold text-green-400">The Institutional Path</h3>
+                        <p class="text-lg font-semibold mt-2">Sundar Pichai</p>
+                        <p class="text-slate-400 mt-4">Leveraged elite education (IIT, Stanford, Wharton) to build deep technical and business expertise, rising through the ranks to lead one of the world's most powerful companies, Google.</p>
+                    </div>
+                    <!-- Path 2 -->
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-4">
+                        <h3 class="text-2xl font-bold text-red-400">The Entrepreneurial Path</h3>
+                        <p class="text-lg font-semibold mt-2">Ritesh Agarwal</p>
+                        <p class="text-slate-400 mt-4">Dropped out of college to solve a real-world problem he experienced firsthand. Built OYO Rooms through grit, observation, and relentless execution, learning directly from the market.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW Slide 7: The Modern Skills Gap -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">The Modern Skills Gap</span></h2>
+                <p class="text-xl text-slate-300 mb-8 anim-fade-up anim-item-2">There's often a disconnect between what traditional education emphasizes and what the modern workplace demands.</p>
+                <div class="text-left space-y-4">
+                    <div class="anim-list-item anim-item-3">
+                        <p class="text-lg font-semibold">Taught in School:</p>
+                        <div class="w-full bg-slate-700 rounded-full h-6 mt-1"><div class="bg-violet-500 h-6 rounded-full" style="width: 70%"></div></div>
+                        <p class="text-sm text-slate-400">Theory, Research, Individual Contribution</p>
+                    </div>
+                    <div class="anim-list-item anim-item-5">
+                        <p class="text-lg font-semibold">Demanded by Employers:</p>
+                        <div class="w-full bg-slate-700 rounded-full h-6 mt-1"><div class="bg-green-500 h-6 rounded-full" style="width: 95%"></div></div>
+                        <p class="text-sm text-slate-400">Adaptability, Collaboration, Emotional IQ, Creativity</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: The Balance -->
         <section class="slide">
             <div class="glass-card max-w-4xl">
                 <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Finding The Balance</span></h2>
@@ -286,7 +330,7 @@
             </div>
         </section>
         
-        <!-- Slide 7: Survey -->
+        <!-- Slide 9: Survey -->
         <section class="slide">
              <div id="survey-container" class="glass-card max-w-3xl w-full">
                 <h2 class="text-3xl md:text-4xl font-bold mb-6 anim-reveal">Quick Poll: What's More Vital Today?</h2>
@@ -306,7 +350,7 @@
             </div>
         </section>
 
-        <!-- Slide 8: Conclusion -->
+        <!-- Slide 10: Conclusion -->
         <section class="slide">
              <div class="glass-card max-w-4xl">
                 <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Conclusion</span></h2>
@@ -316,7 +360,7 @@
             </div>
         </section>
 
-        <!-- Slide 9: Q&A -->
+        <!-- Slide 11: Q&A -->
         <section class="slide">
             <div class="glass-card max-w-2xl">
                  <h2 class="text-6xl md:text-8xl font-extrabold text-gradient anim-fade-up">Q&A</h2>
@@ -324,7 +368,7 @@
             </div>
         </section>
         
-        <!-- Slide 10: Thank You -->
+        <!-- Slide 12: Thank You -->
         <section class="slide">
              <div class="glass-card max-w-3xl">
                 <h2 class="text-5xl md:text-7xl font-bold anim-fade-up"><span class="text-gradient">Thank You</span></h2>
