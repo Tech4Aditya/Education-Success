@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education & Success: A 3D Presentation</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js for the pie chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- 3D & Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
+
+    <style>
+        :root {
+            --accent-color: #a78bfa; /* violet-400 */
+            --accent-color-deep: #7c3aed; /* violet-600 */
+            --glow-color: rgba(124, 58, 237, 0.5);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #f8fafc; /* text-slate-50 */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #three-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .presentation-frame {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 177.78vh; /* 16:9 aspect ratio */
+            max-height: 56.25vw; /* 16:9 aspect ratio */
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 5rem;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.98);
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out, visibility 0.8s;
+            perspective: 2000px;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3), inset 0 0 80px rgba(0,0,0,0.3), 0 0 50px var(--glow-color);
+        }
+        
+        .anim-reveal > span, .anim-fade-up, .anim-list-item, .anim-flip-in {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .anim-fade-up { transform: translateY(20px); }
+        .anim-list-item { transform: translateX(-20px); }
+        .anim-reveal > span { display: inline-block; transform: translateY(20px); }
+        .anim-flip-in { transform: rotateX(-90deg); }
+
+        .active .anim-fade-up,
+        .active .anim-list-item,
+        .active .anim-reveal > span,
+        .active .anim-flip-in {
+            opacity: 1;
+            transform: translate(0, 0) rotateX(0);
+        }
+
+        .active .anim-item-2 { transition-delay: 0.2s; }
+        .active .anim-item-3 { transition-delay: 0.4s; }
+        .active .anim-item-4 { transition-delay: 0.6s; }
+        .active .anim-item-5 { transition-delay: 0.8s; }
+        .active .anim-item-6 { transition-delay: 1.0s; }
+        .active .anim-reveal > span { transition: all 0.5s ease-out; }
+        
+        .text-gradient {
+            background: linear-gradient(90deg, var(--accent-color), #f8fafc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .nav-arrow:hover {
+            background-color: rgba(124, 58, 237, 0.5);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 20px var(--glow-color);
+        }
+        #prev-slide { left: 2rem; }
+        #next-slide { right: 2rem; }
+        
+        #progress-bar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-color-deep));
+            transition: width 0.5s ease-out;
+            border-radius: 0 3px 3px 0;
+        }
+        
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease-out;
+        }
+
+        .flip-card {
+            width: 100%;
+            height: 100%; 
+            perspective: 1500px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.is-flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        .myth-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .myth-container.active-myth {
+            opacity: 1;
+            visibility: visible;
+        }
+        .myth-nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 2rem;
+            line-height: 2rem;
+            color: white;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .myth-nav-arrow:hover {
+            background: var(--accent-color-deep);
+        }
+
+    </style>
+</head>
+<body>
+    
+    <div id="three-bg"></div>
+
+    <div id="login-overlay">
+        <div class="glass-card w-full max-w-sm">
+            <form id="login-form">
+                <h2 class="text-3xl font-bold text-center text-gradient mb-6">Access Presentation</h2>
+                <div class="mb-4">
+                    <label for="username" class="block text-slate-300 text-sm font-bold mb-2 text-left">Username</label>
+                    <input type="text" id="username" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-violet-500" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-slate-300 text-sm font-bold mb-2 text-left">Password</label>
+                    <input type="password" id="password" class="w-full bg-slate-700 border border-slate-600 rounded-lg py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-violet-500" required>
+                </div>
+                <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-lg transform hover:scale-105 transition-all">
+                    Login
+                </button>
+                <p id="error-message" class="text-red-400 text-center mt-4 h-4"></p>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="presentation-frame" style="visibility: hidden;">
+        <!-- Slide 1: Title -->
+        <section class="slide active">
+            <div class="glass-card max-w-4xl">
+                <h1 class="text-5xl md:text-7xl font-extrabold text-gradient anim-fade-up">Education & Success</h1>
+                <h2 class="text-2xl md:text-3xl font-light mt-4 text-slate-300 anim-fade-up anim-item-2">Do They Go Hand in Hand?</h2>
+                <div class="w-24 h-1 bg-violet-500 my-10 mx-auto rounded-full anim-fade-up anim-item-3"></div>
+                <div class="mt-4 text-lg text-slate-400">
+                    <p class="font-semibold text-slate-200 anim-fade-up anim-item-4">Presented by:</p>
+                    <p class="anim-fade-up anim-item-5">Aditya Pandey • Akriti Srivastava • Manya Rastogi • Aksharr Soni • Manan Bhatia</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Introduction -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Introduction</span></h2>
+                <blockquote class="text-2xl italic text-slate-300 border-l-4 border-violet-500 pl-6 anim-fade-up anim-item-2">
+                    "Education is not the learning of facts, but the training of the mind to think."
+                </blockquote>
+                <p class="mt-4 text-right text-xl text-slate-400 anim-fade-up anim-item-3">- Albert Einstein</p>
+                <p class="mt-8 text-xl text-slate-300 anim-fade-up anim-item-4">This powerful idea sets the stage for our discussion. We aim not just to present two sides of an argument, but to explore the modern synergy between classroom knowledge and real-world achievement.</p>
+            </div>
+        </section>
+
+        <!-- Slide 3: The Great Debate (UPDATED) -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl">
+                 <h2 class="text-4xl font-bold mb-8 anim-reveal">The <span class="text-gradient">Great Debate</span></h2>
+                 <p class="text-2xl text-slate-300 anim-fade-up anim-item-2">Why is this conversation more critical now than ever?</p>
+                 <p class="mt-6 text-xl text-slate-400 anim-fade-up anim-item-3">The rise of the tech industry, the gig economy, and access to global information has fundamentally shifted our definition of a successful career, forcing us to re-evaluate the traditional path.</p>
+            </div>
+        </section>
+        
+        <!-- Slide 4: The 'YES' Argument (UPDATED) -->
+        <section class="slide">
+            <div class="glass-card max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-fade-up flex items-center justify-center gap-x-4">
+                    <span class="text-slate-300">Argument:</span>
+                    <span class="text-green-400">YES, It's Crucial</span>
+                </h2>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="anim-list-item anim-item-2">
+                        <h3 class="text-2xl font-semibold mb-2 text-green-400">Strong Foundation</h3>
+                        <p class="text-slate-400">Education builds a framework for critical thinking. It's not about memorizing facts, but learning how to analyze problems and acquire new skills effectively.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-3">
+                        <h3 class="text-2xl font-semibold mb-2 text-green-400">Discipline & Resilience</h3>
+                        <p class="text-slate-400">The structured nature of academia teaches discipline, persistence through challenges, and the ability to manage complex projects over time—all vital for long-term success.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-4">
+                        <h3 class="text-2xl font-semibold mb-2 text-green-400">Unlocking Networks</h3>
+                        <p class="text-slate-400">A degree provides initial credibility and access to powerful alumni networks, mentorships, and opportunities that are often closed to those outside the system.</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-lg text-slate-300 anim-fade-up anim-item-5">Think: Doctors, engineers, and scientists whose careers are built upon years of rigorous, structured learning.</p>
+            </div>
+        </section>
+
+        <!-- Slide 5: The 'NO' Argument (UPDATED) -->
+        <section class="slide">
+            <div class="glass-card max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-fade-up flex items-center justify-center gap-x-4">
+                    <span class="text-slate-300">Argument:</span>
+                    <span class="text-red-400">NO, It's Not Essential</span>
+                </h2>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="anim-list-item anim-item-2">
+                        <h3 class="text-2xl font-semibold mb-2 text-red-400">Skills Over Degrees</h3>
+                        <p class="text-slate-400">In fields like digital marketing or web development, a strong portfolio of real work and verifiable skills often speaks louder to employers than a diploma.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-3">
+                        <h3 class="text-2xl font-semibold mb-2 text-red-400">Pace of Innovation</h3>
+                        <p class="text-slate-400">Technology evolves faster than curricula. Self-taught individuals who are constantly learning can often be more up-to-date than recent graduates.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-4">
+                        <h3 class="text-2xl font-semibold mb-2 text-red-400">Problem-First Approach</h3>
+                        <p class="text-slate-400">Entrepreneurs often succeed by identifying a real-world problem and learning what's necessary to solve it, rather than following a predefined academic path.</p>
+                    </div>
+                </div>
+                <p class="mt-8 text-lg text-slate-300 anim-fade-up anim-item-5">Think: Creators, innovators, and entrepreneurs who built their success by breaking the mold.</p>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Case Study Face-Off with Images -->
+        <section class="slide">
+            <div class="glass-card max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Case Study: Two Paths</span></h2>
+                <div class="flex flex-col md:flex-row gap-8 justify-center">
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-2 text-center">
+                        <img src="https://github.com/Tech4Aditya/Education-Success/blob/main/StoryofSundarPichai.jpg?raw=true" alt="Sundar Pichai" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-2 border-green-400">
+                        <h3 class="text-2xl font-bold text-green-400">The Institutional Path</h3>
+                        <p class="text-lg font-semibold mt-2">Sundar Pichai</p>
+                        <p class="text-slate-400 mt-4 text-left">Leveraged elite education (IIT, Stanford, Wharton) to build deep technical and business expertise, rising through the ranks to lead one of the world's most powerful companies, Google.</p>
+                    </div>
+                    <div class="border border-slate-700 rounded-lg p-6 flex-1 anim-flip-in anim-item-4 text-center">
+                        <img src="https://github.com/Tech4Aditya/Education-Success/blob/main/OYO-Ritesh-Agarwal.jpg?raw=true" alt="Ritesh Agarwal" class="w-32 h-32 object-cover rounded-full mx-auto mb-4 border-2 border-red-400">
+                        <h3 class="text-2xl font-bold text-red-400">The Entrepreneurial Path</h3>
+                        <p class="text-lg font-semibold mt-2">Ritesh Agarwal</p>
+                        <p class="text-slate-400 mt-4 text-left">Dropped out of college to solve a real-world problem he experienced firsthand. Built OYO Rooms through grit, observation, and relentless execution, learning directly from the market.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: The Modern Skills Gap -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">The Modern Skills Gap</span></h2>
+                <p class="text-xl text-slate-300 mb-8 anim-fade-up anim-item-2">There's a growing disconnect between what traditional education provides and what the modern workplace demands for success.</p>
+                <div class="text-left space-y-4">
+                    <div class="anim-list-item anim-item-3">
+                        <p class="text-lg font-semibold">Taught in School (Emphasis on "Hard Skills"):</p>
+                        <div class="w-full bg-slate-700 rounded-full h-6 mt-1"><div class="bg-violet-500 h-6 rounded-full" style="width: 70%"></div></div>
+                        <p class="text-sm text-slate-400">Theory, Research, Individual Contribution</p>
+                    </div>
+                    <div class="anim-list-item anim-item-5">
+                        <p class="text-lg font-semibold">Demanded by Employers (Emphasis on "Soft Skills"):</p>
+                        <div class="w-full bg-slate-700 rounded-full h-6 mt-1"><div class="bg-green-500 h-6 rounded-full" style="width: 95%"></div></div>
+                        <p class="text-sm text-slate-400">Adaptability, Collaboration, Emotional IQ, Creativity</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Myth vs. Reality (Interactive) -->
+        <section class="slide">
+            <div class="glass-card max-w-5xl w-full relative">
+                <h2 class="text-4xl font-bold mb-4 anim-reveal"><span class="text-gradient">Myth vs. Reality</span></h2>
+                
+                <div id="myth-slider" class="relative h-80">
+                    <!-- Myth 1 -->
+                    <div class="myth-container active-myth">
+                        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-red-400">Myth #1</h3>
+                                    <p class="text-2xl mt-4">"You need a degree to be successful."</p>
+                                    <p class="text-lg text-slate-400 mt-8">(Click to reveal)</p>
+                                </div>
+                                <div class="flip-card-back glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-green-400">Reality</h3>
+                                    <p class="text-2xl mt-4">Over 50% of Google's US workforce does not have a traditional 4-year college degree.</p>
+                                    <p class="text-lg text-slate-400 mt-2">Focus is shifting to skills-based hiring.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Myth 2 -->
+                    <div class="myth-container">
+                        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-red-400">Myth #2</h3>
+                                    <p class="text-2xl mt-4">"Success is a straight, upward line."</p>
+                                    <p class="text-lg text-slate-400 mt-8">(Click to reveal)</p>
+                                </div>
+                                <div class="flip-card-back glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-green-400">Reality</h3>
+                                    <p class="text-2xl mt-4">Success is a messy journey of trial, error, and pivots. Failure isn't the opposite of success; it's a stepping stone.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Myth 3 -->
+                    <div class="myth-container">
+                        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-red-400">Myth #3</h3>
+                                    <p class="text-2xl mt-4">"You must have it all figured out early."</p>
+                                    <p class="text-lg text-slate-400 mt-8">(Click to reveal)</p>
+                                </div>
+                                <div class="flip-card-back glass-card p-4">
+                                    <h3 class="text-3xl font-bold text-green-400">Reality</h3>
+                                    <p class="text-2xl mt-4">Most successful people discover their passion through exploration and experience, not by having a rigid 5-year plan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Myth Navigation -->
+                <button class="myth-nav-arrow myth-prev" style="left: 1rem;">‹</button>
+                <button class="myth-nav-arrow myth-next" style="right: 1rem;">›</button>
+            </div>
+        </section>
+
+        <!-- Slide 9: The Future of Learning -->
+        <section class="slide">
+            <div class="glass-card max-w-6xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">The Future of Learning</span></h2>
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="anim-list-item anim-item-2">
+                        <h3 class="text-2xl font-semibold mb-2">Lifelong Learning</h3>
+                        <p class="text-slate-400">The new currency isn't what you know, but how fast you can learn. Continuous upskilling will be mandatory, not optional.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-3">
+                        <h3 class="text-2xl font-semibold mb-2">Micro-credentials</h3>
+                        <p class="text-slate-400">Verifiable certificates for specific skills (from Google, Coursera, etc.) are gaining industry recognition as valid alternatives to degrees.</p>
+                    </div>
+                    <div class="anim-list-item anim-item-4">
+                        <h3 class="text-2xl font-semibold mb-2">Human-Centric Skills</h3>
+                        <p class="text-slate-400">As AI handles routine tasks, uniquely human skills like creativity, strategic thinking, and empathy become the most valuable assets.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 10: The Balance -->
+        <section class="slide">
+            <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Finding The Balance</span></h2>
+                <blockquote class="text-2xl italic text-slate-300 border-l-4 border-violet-500 pl-6 anim-fade-up anim-item-2">
+                    "Education provides the match, but you must be the one to light the fire."
+                </blockquote>
+                <p class="mt-8 text-xl text-slate-300 anim-fade-up anim-item-3">This synergy is key. Education loads the cannon, but vision, passion, and hard work aim it and pull the trigger. Success is not one or the other; it's the effective combination of both.</p>
+            </div>
+        </section>
+        
+        <!-- Slide 11: Survey -->
+        <section class="slide">
+             <div id="survey-container" class="glass-card max-w-3xl w-full">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Quick Poll</span></h2>
+                <p class="text-2xl text-slate-300 anim-fade-up anim-item-2 mb-8">What's More Vital in Today's World?</p>
+                <div id="survey-options" class="flex flex-col md:flex-row gap-6 justify-center">
+                    <button class="survey-btn text-lg bg-violet-600 hover:bg-violet-500 text-white font-bold py-4 px-8 rounded-lg transform hover:scale-105 transition-all anim-fade-up anim-item-3" data-vote="degree">
+                        A Formal Degree
+                    </button>
+                    <button class="survey-btn text-lg bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 px-8 rounded-lg transform hover:scale-105 transition-all anim-fade-up anim-item-4" data-vote="skills">
+                        Practical Skills & Experience
+                    </button>
+                </div>
+            </div>
+            <div id="results-container" class="glass-card max-w-2xl w-full hidden">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Live Poll Results</h2>
+                <p class="text-lg text-slate-400 mb-8">Based on common industry surveys.</p>
+                <canvas id="successChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Slide 12: Conclusion -->
+        <section class="slide">
+             <div class="glass-card max-w-4xl">
+                <h2 class="text-4xl font-bold mb-8 anim-reveal"><span class="text-gradient">Conclusion</span></h2>
+                <p class="text-2xl text-slate-300 leading-relaxed anim-fade-up anim-item-2">
+                    Education is not the destination; it's the launchpad. It provides the tools, but success is built by the hands that use them. True achievement is the synergy of <span class="font-bold text-violet-400">knowledge</span> from learning, the <span class="font-bold text-violet-400">vision</span> to see new possibilities, and the <span class="font-bold text-violet-400">persistence</span> to overcome any obstacle.
+                </p>
+            </div>
+        </section>
+
+        <!-- Slide 13: Q&A -->
+        <section class="slide">
+            <div class="glass-card max-w-2xl">
+                 <h2 class="text-6xl md:text-8xl font-extrabold text-gradient anim-fade-up">Q&A</h2>
+                 <p class="text-2xl mt-4 text-slate-300 anim-fade-up anim-item-2">Questions?</p>
+            </div>
+        </section>
+        
+        <!-- Slide 14: Thank You -->
+        <section class="slide">
+             <div class="glass-card max-w-3xl">
+                <h2 class="text-5xl md:text-7xl font-bold anim-fade-up"><span class="text-gradient">Thank You</span></h2>
+                <div class="w-20 h-1 bg-violet-500 my-8 mx-auto rounded-full anim-fade-up anim-item-2"></div>
+                <blockquote class="text-xl italic text-slate-300 anim-fade-up anim-item-3">
+                    "The future belongs to those who learn more skills and combine them in creative ways."
+                </blockquote>
+                <p class="mt-4 text-right text-lg text-slate-400 anim-fade-up anim-item-4">- Robert Greene</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Navigation & Progress Bar -->
+    <button id="prev-slide" class="nav-arrow" aria-label="Previous Slide">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+    </button>
+    <button id="next-slide" class="nav-arrow" aria-label="Next Slide">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+    </button>
+    <div id="progress-bar-container"><div id="progress-bar"></div></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevButton = document.getElementById('prev-slide');
+            const nextButton = document.getElementById('next-slide');
+            const progressBar = document.getElementById('progress-bar');
+            const presentationFrame = document.querySelector('.presentation-frame');
+            const loginOverlay = document.getElementById('login-overlay');
+            const loginForm = document.getElementById('login-form');
+            const passwordInput = document.getElementById('password');
+            const errorMessage = document.getElementById('error-message');
+
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (passwordInput.value === 'AP') {
+                    loginOverlay.style.opacity = '0';
+                    setTimeout(() => loginOverlay.style.display = 'none', 500);
+                    presentationFrame.style.visibility = 'visible';
+                    initThree();
+                    initPresentation();
+                } else {
+                    errorMessage.textContent = 'Incorrect password.';
+                    setTimeout(() => {
+                        errorMessage.textContent = '';
+                        passwordInput.value = '';
+                    }, 2000);
+                }
+            });
+
+            function initPresentation() {
+                updatePresentation();
+                nextButton.addEventListener('click', () => {
+                    currentSlide = (currentSlide + 1) % totalSlides;
+                    updatePresentation();
+                });
+                prevButton.addEventListener('click', () => {
+                    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                    updatePresentation();
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextButton.click(); } 
+                    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevButton.click(); }
+                });
+            }
+
+            function splitTextIntoSpans(selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    const text = el.innerText;
+                    el.innerHTML = '';
+                    text.split('').forEach((char, i) => {
+                        const span = document.createElement('span');
+                        span.textContent = char;
+                        if(char === ' ') span.style.width = '1rem';
+                        span.style.transitionDelay = `${i * 0.03}s`;
+                        el.appendChild(span);
+                    });
+                });
+            }
+
+            splitTextIntoSpans('.anim-reveal');
+
+            function updatePresentation() {
+                slides.forEach((slide, index) => {
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
+                progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+                transitionBackground(currentSlide);
+            }
+
+            const surveyButtons = document.querySelectorAll('.survey-btn');
+            const surveyContainer = document.getElementById('survey-container');
+            const resultsContainer = document.getElementById('results-container');
+            let chart;
+
+            surveyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    surveyContainer.style.display = 'none';
+                    resultsContainer.classList.remove('hidden');
+
+                    const ctx = document.getElementById('successChart').getContext('2d');
+                    if (chart) chart.destroy();
+                    chart = new Chart(ctx, { /* ... chart config ... */ 
+                        type: 'doughnut',
+                        data: {
+                            labels: ['A Formal Degree', 'Practical Skills & Experience'],
+                            datasets: [{
+                                data: [35, 65],
+                                backgroundColor: ['rgba(124, 58, 237, 0.7)', 'rgba(167, 139, 250, 0.7)'],
+                                borderColor: ['#0f172a', '#0f172a'],
+                                borderWidth: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            cutout: '70%',
+                            plugins: {
+                                legend: { position: 'bottom', labels: { color: '#f8fafc', font: { size: 14 } } },
+                                tooltip: { callbacks: { label: (c) => `${c.label}: ${c.parsed}%` } }
+                            }
+                        }
+                    });
+                });
+            });
+
+            const mythContainers = document.querySelectorAll('.myth-container');
+            const mythPrevBtn = document.querySelector('.myth-prev');
+            const mythNextBtn = document.querySelector('.myth-next');
+            let currentMyth = 0;
+
+            function updateMyths() {
+                mythContainers.forEach((container, index) => {
+                    container.classList.remove('active-myth');
+                    container.querySelector('.flip-card').classList.remove('is-flipped');
+                    if (index === currentMyth) {
+                        container.classList.add('active-myth');
+                    }
+                });
+            }
+
+            mythNextBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentMyth = (currentMyth + 1) % mythContainers.length;
+                updateMyths();
+            });
+
+            mythPrevBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentMyth = (currentMyth - 1 + mythContainers.length) % mythContainers.length;
+                updateMyths();
+            });
+            
+            let scene, camera, renderer, nebulaParticles, crystalGroup;
+            const container = document.getElementById('three-bg');
+
+            function initThree() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                renderer = new THREE.WebGLRenderer({ alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                container.appendChild(renderer.domElement);
+                camera.position.z = 5;
+
+                createNebula();
+                createCrystals();
+                
+                window.addEventListener('resize', onWindowResize, false);
+                animate();
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function createNebula() {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const textureLoader = new THREE.TextureLoader();
+                const sprite = textureLoader.load('https://threejs.org/examples/textures/sprites/disc.png');
+                for (let i = 0; i < 5000; i++) {
+                    vertices.push( (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15 );
+                }
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                const material = new THREE.PointsMaterial({ size: 0.1, map: sprite, blending: THREE.AdditiveBlending, depthTest: false, transparent: true, color: 0x6a0dad });
+                nebulaParticles = new THREE.Points(geometry, material);
+                scene.add(nebulaParticles);
+            }
+
+            function createCrystals() {
+                crystalGroup = new THREE.Group();
+                const geometry = new THREE.ConeGeometry(0.2, 0.5, 6);
+                const greenMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, emissive: 0x00ff00, transparent: true, opacity: 0.6 });
+                const redMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000, emissive: 0xff0000, transparent: true, opacity: 0.6 });
+                for(let i=0; i<100; i++) {
+                    const material = i < 50 ? greenMaterial : redMaterial;
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set( (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20 );
+                    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                    crystalGroup.add(mesh);
+                }
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                crystalGroup.add(ambientLight);
+                crystalGroup.visible = false;
+                scene.add(crystalGroup);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (nebulaParticles) nebulaParticles.rotation.y += 0.0005;
+                if (crystalGroup) crystalGroup.rotation.y -= 0.0005;
+                if (renderer) renderer.render(scene, camera);
+            }
+
+            function transitionBackground(slideIndex) {
+                 const isDebateSection = slideIndex >= 3 && slideIndex <= 5; 
+                 
+                 if(nebulaParticles && crystalGroup) {
+                    gsap.to(nebulaParticles.material, { opacity: isDebateSection ? 0 : 1, duration: 1 });
+                    crystalGroup.visible = true; 
+                    crystalGroup.children.forEach(child => {
+                        if(child.material) {
+                           gsap.to(child.material, { opacity: isDebateSection ? 0.6 : 0, duration: 1 });
+                        }
+                    });
+                 }
+                 
+                 let targetX = 0, targetZ = 5;
+
+                 if (slideIndex === 3) { targetX = -3; targetZ = 4; } 
+                 else if (slideIndex === 4) { targetX = 3; targetZ = 4; } 
+                 else if (isDebateSection) { targetZ = 8; } 
+
+                 gsap.to(camera.position, { duration: 1.5, x: targetX, z: targetZ, ease: 'power2.inOut' });
+            }
+        });
+    </script>
+</body>
+</html>
